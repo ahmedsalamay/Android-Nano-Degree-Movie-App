@@ -1,4 +1,4 @@
-package com.phantom.asalama.movies;
+package com.phantom.asalama.movies.screen.home;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -11,6 +11,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+
+import com.phantom.asalama.movies.R;
+import com.phantom.asalama.movies.screen.detail.MovieDetailActivity;
+
+import javax.inject.Inject;
 
 /**
  * An activity representing a list of Movies. This activity
@@ -35,7 +40,8 @@ public class MovieListActivity extends AppCompatActivity {
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
-    private SectionsPagerAdapter mSectionsPagerAdapter;
+    @Inject
+    public SectionsPagerAdapter mSectionsPagerAdapter;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -60,8 +66,12 @@ public class MovieListActivity extends AppCompatActivity {
         }
 
 
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), mTwoPane);
-
+        HomeComponent homeComponent = DaggerHomeComponent.builder()
+                .homeModule(new HomeModule(this, mTwoPane))
+                .build();
+        homeComponent.injectHome(this);
+        // mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), mTwoPane);
+        // mSectionsPagerAdapter= homeComponent.sectionPagerAdapter();
         // Set up the ViewPager with the sections adapter.
         mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);

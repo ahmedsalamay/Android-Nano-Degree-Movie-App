@@ -1,4 +1,4 @@
-package com.phantom.asalama.movies;
+package com.phantom.asalama.movies.screen.detail;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +10,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+
+import com.phantom.asalama.movies.R;
+import com.phantom.asalama.movies.screen.home.MovieListActivity;
 
 /**
  * An activity representing a single Movie detail screen. This
@@ -54,8 +57,8 @@ public class MovieDetailActivity extends AppCompatActivity {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(MovieDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(MovieDetailFragment.ARG_ITEM_ID));
+            arguments.putParcelable(MovieDetailFragment.ARG_ITEM_ID,
+                    getIntent().getParcelableExtra(MovieDetailFragment.ARG_ITEM_ID));
             MovieDetailFragment fragment = new MovieDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()

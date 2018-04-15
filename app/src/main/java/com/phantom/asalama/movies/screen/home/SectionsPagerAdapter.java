@@ -1,4 +1,4 @@
-package com.phantom.asalama.movies;
+package com.phantom.asalama.movies.screen.home;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -19,9 +19,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        // getItem is called to instantiate the fragment for the given page.
-        // Return a PlaceholderFragment (defined as a static inner class below).
-        return PlaceholderFragment.newInstance(position + 1, mTwoPane);
+        return TabbedHomeFragment.newInstance(position + 1, mTwoPane);
     }
 
     @Override
