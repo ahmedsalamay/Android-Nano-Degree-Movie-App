@@ -1,7 +1,7 @@
 package com.phantom.asalama.movies.Util;
 
 public class TmdbUrls {
-    public static final String THMDB_API_KEY = "&api_key=244e23f58f9f1468b298d7d9069d9b91";
+    public static final String THMDB_API_KEY = "&api_key=YOUR OWN KEY";
     public static final String BASE_URL = "http://api.themoviedb.org/3/movie/";
     public static final String SORT_POPULARITY = "popular?&sort_by=popularity.desc";
     public static final String SORT_RATED = "top_rated?sort_by=vote_average.desc&vote_count.gte=250";
