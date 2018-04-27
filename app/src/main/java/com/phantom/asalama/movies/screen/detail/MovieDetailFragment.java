@@ -7,11 +7,14 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.phantom.asalama.movies.MovieApplication;
 import com.phantom.asalama.movies.R;
 import com.phantom.asalama.movies.models.Movie;
 import com.phantom.asalama.movies.screen.home.MovieListActivity;
+import com.squareup.picasso.Picasso;
 
 /**
  * A fragment representing a single Movie detail screen.
@@ -64,7 +67,18 @@ public class MovieDetailFragment extends Fragment {
 
         // Show the dummy content as text in a TextView.
         if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.movie_detail)).setText(mItem.getTitle());
+            ((TextView) rootView.findViewById(R.id.movie_title)).setText(mItem.getTitle());
+            ((TextView) rootView.findViewById(R.id.movie_rating)).setText(mItem.getReleaseDate());
+            ((TextView) rootView.findViewById(R.id.movie_realse_date)).setText(mItem.getVoteAverage().toString());
+            ((TextView) rootView.findViewById(R.id.story_line)).setText(mItem.getOverview());
+
+
+            Picasso picasso = ((MovieApplication) (getActivity().getApplication())).getmPicasso();
+            picasso
+                    .load("http://image.tmdb.org/t/p/w154//"
+                            + mItem.getPosterPath())
+                    .into(((ImageView) rootView.findViewById(R.id.movie_poster)));
+
         }
 
         return rootView;
