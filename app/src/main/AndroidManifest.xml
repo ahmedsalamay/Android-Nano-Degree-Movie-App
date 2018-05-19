@@ -3,6 +3,7 @@
     package="com.phantom.asalama.movies">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:name=".MovieApplication"
         android:allowBackup="true"
@@ -30,6 +31,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.phantom.asalama.movies.screen.home.MovieListActivity" />
         </activity>
+
+        <provider
+            android:name=".data.MoviesContentProvider"
+            android:authorities="com.phantom.asalama.movies.provider"
+            android:exported="false" />
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

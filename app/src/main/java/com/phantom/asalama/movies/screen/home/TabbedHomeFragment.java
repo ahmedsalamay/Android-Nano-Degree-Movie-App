@@ -2,6 +2,9 @@ package com.phantom.asalama.movies.screen.home;
 
 //**
 
+import android.app.Activity;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -21,8 +24,12 @@ import com.phantom.asalama.movies.MovieService;
 import com.phantom.asalama.movies.R;
 import com.phantom.asalama.movies.Util.EndlessRecyclerViewScrollListener;
 import com.phantom.asalama.movies.Util.Utility;
+import com.phantom.asalama.movies.data.MovieContract;
+import com.phantom.asalama.movies.data.MovieDbHelper;
+import com.phantom.asalama.movies.data.MoviesContentProvider;
 import com.phantom.asalama.movies.models.Movie;
 import com.phantom.asalama.movies.models.MoviesPage;
+import com.phantom.asalama.movies.screen.detail.MovieDetailActivity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +37,8 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.phantom.asalama.movies.data.MovieContract.MovieEntry.*;
 
 /* A placeholder fragment containing a simple view.
  */
@@ -51,8 +60,8 @@ public class TabbedHomeFragment extends Fragment implements LoaderManager.Loader
     private MovieListRecyclerViewAdapter mMovieListRecyclerViewAdapter;
     private LoaderManager loaderManager;
     private SpinKitView mOnLoadMoreLoadingIndecator;
-
-
+    private List<Movie> mDBMovies;
+    private boolean isCommingFromDetailsActivity = false;
     public TabbedHomeFragment() {
     }
 
@@ -100,6 +109,7 @@ public class TabbedHomeFragment extends Fragment implements LoaderManager.Loader
         mRecyclerView.addOnScrollListener(new EndlessRecyclerViewScrollListener(gridLayoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                isCommingFromDetailsActivity = false;
                 if (Utility.isConnectedOrConnecting(getContext())) {
                     loadNextDataFromApi(page);
                 }
@@ -116,6 +126,18 @@ public class TabbedHomeFragment extends Fragment implements LoaderManager.Loader
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mSectionNumber == 3) {
+            isCommingFromDetailsActivity = true;
+            Bundle pageNumber = new Bundle();
+            pageNumber.putInt(PAGE_NUMBER_ARGS, 3);
+            if (!loaderManager.hasRunningLoaders()) {
+                loaderManager.restartLoader(0, pageNumber, this);
+            }
+        }
+    }
 
     @Override
     public Loader<MoviesPage> onCreateLoader(int id, Bundle args) {
@@ -127,7 +149,6 @@ public class TabbedHomeFragment extends Fragment implements LoaderManager.Loader
             protected void onStartLoading() {
                 //super.onStartLoading();
                 forceLoad();
-                //TODO loading indecator here
                 mOnLoadMoreLoadingIndecator.setVisibility(View.VISIBLE);
             }
 
@@ -139,6 +160,13 @@ public class TabbedHomeFragment extends Fragment implements LoaderManager.Loader
                 } else if (mSectionNumber == 2) {
                     pageCall = mMovieService.listRateMoives(pageNumber);
                 } else if (mSectionNumber == 3) {
+                    if (mDBMovies == null || isCommingFromDetailsActivity) {
+                        MoviesPage moviesPage = new MoviesPage();
+                        mDBMovies = new ArrayList<>();
+                        mDBMovies = getMovieListFromDatabase();
+                        moviesPage.setResults(mDBMovies);
+                        return moviesPage;
+                    }
 
                 }
                 if (Utility.isConnectedOrConnecting(getContext())) {
@@ -168,8 +196,13 @@ public class TabbedHomeFragment extends Fragment implements LoaderManager.Loader
     public void onLoadFinished(Loader<MoviesPage> loader, MoviesPage data) {
         if (data != null) {
             mMoviesPage = data;
-            mPopularMovies.addAll(mMoviesPage.getResults());
-            mMovieListRecyclerViewAdapter.setNewData(mPopularMovies);
+            if (mSectionNumber == 3) {
+                mDBMovies = mMoviesPage.getResults();
+                mMovieListRecyclerViewAdapter.setNewData(mDBMovies);
+            } else {
+                mPopularMovies.addAll(mMoviesPage.getResults());
+                mMovieListRecyclerViewAdapter.setNewData(mPopularMovies);
+            }
             mMovieListRecyclerViewAdapter.notifyDataSetChanged();
         }
         mOnLoadMoreLoadingIndecator.setVisibility(View.INVISIBLE);
@@ -180,4 +213,33 @@ public class TabbedHomeFragment extends Fragment implements LoaderManager.Loader
     public void onLoaderReset(Loader<MoviesPage> loader) {
 
     }
+
+
+    public ArrayList<Movie> getMovieListFromDatabase() {
+
+        ArrayList<Movie> mMovieList = new ArrayList<>();
+        Uri contentUri = MovieContract.CONTENT_BASE_URI;
+
+        Cursor c = getActivity().getContentResolver().query(contentUri, null, null, null, null);
+        if (c.moveToFirst()) {
+            do {
+                Movie movie = new Movie();
+                movie.setId((Integer.valueOf(c.getString(c.getColumnIndex(COLUMN_NAME_ID)))));
+                movie.setTitle(c.getString(c.getColumnIndex(COLUMN_NAME_TITLE)));
+                movie.setReleaseDate(c.getString(c.getColumnIndex(COLUMN_NAME_DATE)));
+                movie.setPosterPath(c.getString(c.getColumnIndex(COLUMN_NAME_POSTER)));
+                movie.setBackdropPath(c.getString(c.getColumnIndex(COLUMN_NAME_BACKDROP)));
+                movie.setOverview(c.getString(c.getColumnIndex(COLUMN_NAME_OVERVIEW)));
+                movie.setVoteCount(c.getInt(c.getColumnIndex(COLUMN_NAME_VOTE_COUNT)));
+                movie.setVoteAverage(c.getDouble(c.getColumnIndex(COLUMN_NAME_RATING)));
+                movie.setOriginalLanguage(c.getString(c.getColumnIndex(COLUMN_NAME_LANGUAGE)));
+                movie.setPopularity(c.getDouble(c.getColumnIndex(COLUMN_NAME_POPULARITY)));
+
+                mMovieList.add(movie);
+            } while (c.moveToNext());
+        }
+        c.close();
+        return mMovieList;
+    }
+
 }
